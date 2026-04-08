@@ -1,103 +1,256 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-8">
-    <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 relative">
-      
-      <div class="flex justify-between items-center border-b pb-4 mb-4">
-        <h1 class="text-2xl font-bold text-gray-800">Dashboard Sekolah</h1>
-        <button @click="handleLogout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200">
-          Logout
+  <div class="flex h-screen bg-gray-100 font-sans">
+    
+    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-2xl z-20">
+      <div class="h-16 flex items-center justify-center bg-slate-900 border-b border-slate-700">
+        <svg class="w-8 h-8 text-emerald-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+        <span class="text-xl font-bold tracking-wider text-emerald-50">SI-SEKOLAH</span>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-3">
+        
+        <button @click="activeMenu = 'dashboard'" :class="['w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors', activeMenu === 'dashboard' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white']">
+          <span class="mr-3"></span> Beranda
         </button>
-      </div>
 
-      <div v-if="user" class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-        <p class="text-green-700">Selamat datang kembali, <strong>{{ user.username }}</strong>!</p>
-      </div>
+        <p class="px-4 pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Data Master</p>
+        
+        <button @click="activeMenu = 'siswa'" :class="['w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors', activeMenu === 'siswa' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white']">
+          <span class="mr-3"></span> Data Siswa
+        </button>
 
-      <div class="mt-8">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-700">Data Siswa</h2>
-          <button @click="bukaModalTambah" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200">
-            + Tambah Siswa
+        <button @click="activeMenu = 'guru'" :class="['w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors', activeMenu === 'guru' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white']">
+          <span class="mr-3"></span> Data Guru
+        </button>
+
+        <p class="px-4 pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Akademik</p>
+
+        <button @click="activeMenu = 'kelas'" :class="['w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors', activeMenu === 'kelas' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white']">
+          <span class="mr-3"></span> Ruang Kelas
+        </button>
+        <button @click="activeMenu = 'mapel'" :class="['w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors', activeMenu === 'mapel' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white']">
+          <span class="mr-3"></span> Mata Pelajaran
+        </button>
+        <button @click="activeMenu = 'jadwal'" :class="['w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors', activeMenu === 'jadwal' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white']">
+          <span class="mr-3"></span> Jadwal Pelajaran
+        </button>
+
+        <div v-if="user && user.type === 'admin'">
+          <p class="px-4 pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pengaturan</p>
+          <button @click="activeMenu = 'users'" :class="['w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors', activeMenu === 'users' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white']">
+            <span class="mr-3"></span> Manajemen User
           </button>
         </div>
 
-        <div class="overflow-x-auto border border-gray-200 rounded-lg">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIS</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Siswa</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gender</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-if="listSiswa.length === 0">
-                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Data belum tersedia...</td>
-              </tr>
-              <tr v-for="siswa in listSiswa" :key="siswa.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 text-sm text-gray-500">{{ siswa.nis || '-' }}</td>
-                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ siswa.nama }}</td>
-                <td class="px-6 py-4 text-sm text-gray-500">{{ siswa.gender }}</td>
-                <td class="px-6 py-4 text-sm text-gray-500">{{ siswa.email }}</td>
-                <td class="px-6 py-4 text-sm font-medium">
-                  <button @click="bukaModalEdit(siswa)" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
-                  <button @click="hapusSiswa(siswa.id)" class="text-red-600 hover:text-red-900">Hapus</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </nav>
+    </aside>
 
-      <div v-if="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div class="bg-white rounded-lg w-full max-w-md p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-900">
-              {{ isEditMode ? 'Edit Data Siswa' : 'Tambah Data Siswa' }}
-            </h3>
-            <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+    <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
+      
+      <header class="h-16 bg-white shadow-sm border-b border-gray-200 flex items-center justify-between px-8 z-10">
+        <h2 class="text-xl font-bold text-slate-800 capitalize">
+          {{ activeMenu === 'dashboard' ? 'Beranda Utama' : 'Manajemen Data ' + activeMenu }}
+        </h2>
+        
+        <div class="flex items-center space-x-4">
+          <div v-if="user" class="text-right hidden md:block">
+            <p class="text-sm font-bold text-slate-700">{{ user.username }}</p>
+            <p class="text-xs text-emerald-600 font-semibold uppercase">{{ user.type }}</p>
+          </div>
+          <div class="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold border border-emerald-300">
+            {{ user ? user.username.charAt(0).toUpperCase() : 'U' }}
+          </div>
+          <button @click="handleLogout" class="ml-4 text-sm font-semibold text-red-500 hover:text-red-700 transition">
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-y-auto p-8">
+
+        <div v-if="activeMenu === 'dashboard'" class="space-y-6 animate-fade-in">
+          <div class="bg-emerald-600 rounded-2xl shadow-lg p-8 text-white relative overflow-hidden">
+            <div class="relative z-10">
+              <h2 class="text-3xl font-extrabold mb-2">Selamat Datang, {{ user?.username }}!</h2>
+              <p class="text-emerald-100 max-w-xl">Ini adalah pusat kendali Sistem Informasi Sekolah. Anda memiliki akses sebagai <strong class="uppercase text-white">{{ user?.type }}</strong>.</p>
+            </div>
+            <div class="absolute -right-10 -top-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
           </div>
 
-          <form @submit.prevent="simpanSiswa" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">NIS</label>
-              <input v-model="formSiswa.nis" type="text" class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 sm:text-sm">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-emerald-500 hover:shadow-md transition">
+              <p class="text-sm font-semibold text-gray-500">Total Siswa</p>
+              <p class="text-3xl font-bold text-slate-800 mt-2">{{ listSiswa.length }}</p>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Nama Lengkap *</label>
-              <input v-model="formSiswa.nama" type="text" required class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 sm:text-sm">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500 hover:shadow-md transition">
+              <p class="text-sm font-semibold text-gray-500">Total Guru</p>
+              <p class="text-3xl font-bold text-slate-800 mt-2">12</p>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Gender *</label>
-              <select v-model="formSiswa.gender" required class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 sm:text-sm">
-                <option value="laki-laki">Laki-laki</option>
-                <option value="perempuan">Perempuan</option>
-              </select>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-amber-500 hover:shadow-md transition">
+              <p class="text-sm font-semibold text-gray-500">Total Kelas</p>
+              <p class="text-3xl font-bold text-slate-800 mt-2">6</p>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Email *</label>
-              <input v-model="formSiswa.email" type="email" required class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 sm:text-sm">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500 hover:shadow-md transition">
+              <p class="text-sm font-semibold text-gray-500">Total Mapel</p>
+              <p class="text-3xl font-bold text-slate-800 mt-2">18</p>
             </div>
+          </div>
+        </div>
 
-            <div v-if="errorMessage" class="text-red-500 text-sm mt-2">
-              {{ errorMessage }}
-            </div>
+        <div v-if="activeMenu === 'siswa'" class="animate-fade-in">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+              <div class="relative w-64">
+                <input type="text" placeholder="Cari siswa..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                <span class="absolute left-3 top-2.5 text-gray-400"></span>
+              </div>
 
-            <div class="flex justify-end pt-4">
-              <button type="button" @click="isModalOpen = false" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded-md mr-2 text-sm">Batal</button>
-              <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm">
-                {{ isEditMode ? 'Update Data' : 'Simpan' }}
+              <button @click="bukaModalTambah" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition duration-200 flex items-center">
+                <span class="mr-2 text-lg leading-none">+</span> Tambah Siswa
               </button>
             </div>
-          </form>
 
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">NIS</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Lengkap</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Gender</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Kontak</th>
+                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                  <tr v-if="listSiswa.length === 0">
+                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Belum ada data siswa di database.</td>
+                  </tr>
+                  <tr v-for="siswa in listSiswa" :key="siswa.id" class="hover:bg-slate-50 transition duration-150 group">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">{{ siswa.nis || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-bold text-slate-800">{{ siswa.nama }}</div>
+                      <div class="text-xs text-slate-400">ID Kelas: {{ siswa.kelas_id || 'Belum ada kelas' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 capitalize">
+                      <span :class="siswa.gender === 'laki-laki' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'" class="px-2.5 py-1 rounded-full text-xs font-semibold">
+                        {{ siswa.gender }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-slate-600">{{ siswa.email || '-' }}</div>
+                      <div class="text-xs text-slate-400">{{ siswa.phone_number || '-' }}</div>
+                    </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                    <button @click="bukaModalEdit(siswa)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
+                    <button @click="hapusSiswa(siswa.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
+                  </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
+
+        <div v-if="['guru', 'kelas', 'mapel', 'jadwal', 'users'].includes(activeMenu)" class="flex flex-col items-center justify-center h-64 bg-white rounded-xl border border-dashed border-gray-300">
+          <div class="text-4xl mb-4"></div>
+          <h3 class="text-lg font-bold text-slate-700 mb-1">Modul Belum Tersedia</h3>
+          <p class="text-slate-500 text-sm">Halaman untuk <strong>{{ activeMenu }}</strong> akan segera dibangun.</p>
+        </div>
+
       </div>
+    </main>
+
+    <div v-if="isModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
+        
+        <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+          <h3 class="text-xl font-bold text-slate-800">
+            {{ isEditMode ? 'Update Data Siswa' : 'Registrasi Siswa Baru' }}
+          </h3>
+          <button @click="isModalOpen = false" class="text-slate-400 hover:text-red-500 hover:bg-red-50 h-8 w-8 rounded-full flex items-center justify-center text-2xl transition">&times;</button>
+        </div>
+
+        <form @submit.prevent="simpanSiswa" class="overflow-y-auto p-8 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">NIS <span class="text-red-500">*</span></label>
+                <input v-model="formSiswa.nis" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
+                <input v-model="formSiswa.nama" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Gender <span class="text-red-500">*</span></label>
+                <select v-model="formSiswa.gender" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition cursor-pointer">
+                  <option value="laki-laki">Laki-laki</option>
+                  <option value="perempuan">Perempuan</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Email Pribadi <span class="text-red-500">*</span></label>
+                <input v-model="formSiswa.email" type="email" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Nomor Handphone</label>
+                <input v-model="formSiswa.phone_number" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+              </div>
+            </div>
+
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Tempat Lahir</label>
+                <input v-model="formSiswa.tempat_lahir" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Tanggal Lahir</label>
+                <input v-model="formSiswa.tgl_lahir" type="date" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition cursor-pointer">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Nama Orang Tua/Wali</label>
+                <input v-model="formSiswa.nama_ortu" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">ID Kelas Terdaftar</label>
+                <input v-model="formSiswa.kelas_id" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Contoh: 1">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Alamat Tempat Tinggal</label>
+                <textarea v-model="formSiswa.alamat" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition resize-none"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="errorMessage" class="text-red-700 bg-red-50 p-4 rounded-lg text-sm font-medium border border-red-200 flex items-start">
+            <span class="mr-2"></span> {{ errorMessage }}
+          </div>
+
+          <div class="flex justify-end pt-6 border-t border-slate-100 mt-8">
+            <button type="button" @click="isModalOpen = false" class="bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 px-6 py-2.5 rounded-lg font-bold mr-3 transition">Batal</button>
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-2.5 rounded-lg font-bold shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5">
+              {{ isEditMode ? 'Simpan Perubahan' : 'Tambah Data' }}
+            </button>
+          </div>
+        </form>
+
       </div>
+    </div>
+
   </div>
 </template>
+
+<style>
+/* Efek animasi simpel saat pindah tab */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -108,18 +261,21 @@ const router = useRouter();
 const user = ref(null);
 const listSiswa = ref([]);
 
-// State untuk Modal
+// Variabel baru penentu menu yang sedang aktif
+const activeMenu = ref('dashboard');
+
 const isModalOpen = ref(false);
 const errorMessage = ref('');
-const isEditMode = ref(false); // Penanda apakah kita sedang mode Edit
-const editId = ref(null); // Menyimpan ID siswa yang sedang diedit
+const isEditMode = ref(false); 
+const editId = ref(null); 
 
-const formSiswa = ref({
-  nis: '',
-  nama: '',
-  gender: 'laki-laki',
-  email: ''
+const getEmptyForm = () => ({
+  nis: '', nama: '', gender: 'laki-laki', email: '',
+  tempat_lahir: '', tgl_lahir: '', nama_ortu: '',
+  phone_number: '', alamat: '', kelas_id: ''
 });
+
+const formSiswa = ref(getEmptyForm());
 
 onMounted(async () => {
   const token = localStorage.getItem('token');
@@ -145,66 +301,49 @@ const fetchSiswa = async () => {
     const collectionData = response.data.collection || (response.data.data && response.data.data.collection);
 
     if (collectionData && collectionData.items) {
-        const rawItems = collectionData.items;
-        listSiswa.value = rawItems.map(item => {
+        listSiswa.value = collectionData.items.map(item => {
             let flatObj = {};
-            item.data.forEach(field => { flatObj[field.name] = field.value; });
+            item.data.forEach(f => { flatObj[f.name] = f.value; });
             return flatObj;
         });
     } else {
         listSiswa.value = response.data.data || response.data;
     }
   } catch (error) {
-    console.error('Gagal mengambil data:', error);
+    console.error('Gagal:', error);
   }
 };
 
-// Fungsi Membuka Modal untuk TAMBAH Data Baru
 const bukaModalTambah = () => {
-  isEditMode.value = false;
-  editId.value = null;
-  errorMessage.value = '';
-  formSiswa.value = { nis: '', nama: '', gender: 'laki-laki', email: '' }; // Kosongkan form
-  isModalOpen.value = true;
+  isEditMode.value = false; editId.value = null; errorMessage.value = '';
+  formSiswa.value = getEmptyForm(); isModalOpen.value = true;
 };
 
-// Fungsi Membuka Modal untuk EDIT Data
 const bukaModalEdit = (siswa) => {
-  isEditMode.value = true;
-  editId.value = siswa.id;
-  errorMessage.value = '';
-  // Isi form dengan data siswa yang diklik
-  formSiswa.value = { 
-    nis: siswa.nis, 
-    nama: siswa.nama, 
-    gender: siswa.gender, 
-    email: siswa.email 
-  };
+  isEditMode.value = true; editId.value = siswa.id; errorMessage.value = '';
+  formSiswa.value = { ...siswa, kelas_id: siswa.kelas_id || '' };
   isModalOpen.value = true;
 };
 
-// Fungsi SIMPAN (Bisa untuk Create maupun Update)
 const simpanSiswa = async () => {
   errorMessage.value = ''; 
   try {
+    const payload = { ...formSiswa.value };
+    if (!payload.kelas_id) delete payload.kelas_id;
+
     if (isEditMode.value) {
-      // Jika mode edit, gunakan PUT ke /api/siswa/{id}
-      await api.put(`/siswa/${editId.value}`, formSiswa.value);
+      await api.put(`/siswa/${editId.value}`, payload);
       alert('Data Siswa berhasil diperbarui!');
     } else {
-      // Jika mode tambah, gunakan POST ke /api/siswa
-      await api.post('/siswa', formSiswa.value);
+      await api.post('/siswa', payload);
       alert('Data Siswa berhasil ditambahkan!');
     }
     
     isModalOpen.value = false; 
     await fetchSiswa(); 
-
   } catch (error) {
     if (error.response && error.response.status === 422) {
-      const errors = error.response.data.message;
-      const firstError = Object.values(errors)[0][0]; 
-      errorMessage.value = firstError;
+      errorMessage.value = Object.values(error.response.data.message)[0][0]; 
     } else {
       errorMessage.value = 'Terjadi kesalahan pada server.';
     }
@@ -213,8 +352,7 @@ const simpanSiswa = async () => {
 
 const hapusSiswa = async (id) => {
   if (!id) return;
-  const isConfirm = confirm('Apakah Anda yakin ingin menghapus data siswa ini?');
-  if (isConfirm) {
+  if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
     try {
       await api.delete(`/siswa/${id}`);
       await fetchSiswa(); 
