@@ -101,7 +101,7 @@
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
               <div class="relative w-64">
-                <input type="text" placeholder="Cari siswa..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                <input v-model="searchQuery" type="text" placeholder="Cari siswa (Nama/NIS)..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
                 <span class="absolute left-3 top-2.5 text-gray-400"></span>
               </div>
 
@@ -122,10 +122,10 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
-                  <tr v-if="listSiswa.length === 0">
-                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Belum ada data siswa di database.</td>
+                  <tr v-if="filteredSiswa.length === 0">
+                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Data siswa tidak ditemukan.</td>
                   </tr>
-                  <tr v-for="siswa in listSiswa" :key="siswa.id" class="hover:bg-slate-50 transition duration-150 group">
+                  <tr v-for="siswa in filteredSiswa" :key="siswa.id" class="hover:bg-slate-50 transition duration-150 group">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">{{ siswa.nis || '-' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="text-sm font-bold text-slate-800">{{ siswa.nama }}</div>
@@ -253,16 +253,27 @@
 </style>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../api';
 
 const router = useRouter();
 const user = ref(null);
 const listSiswa = ref([]);
-
-// Variabel baru penentu menu yang sedang aktif
 const activeMenu = ref('dashboard');
+
+const searchQuery = ref(''); 
+const filteredSiswa = computed(() => {
+  if (!searchQuery.value) return listSiswa.value;
+  const query = searchQuery.value.toLowerCase();
+  return listSiswa.value.filter(siswa => {
+    return (
+      (siswa.nama && siswa.nama.toLowerCase().includes(query)) ||
+      (siswa.nis && String(siswa.nis).includes(query)) ||
+      (siswa.email && siswa.email.toLowerCase().includes(query))
+    );
+  });
+});
 
 const isModalOpen = ref(false);
 const errorMessage = ref('');
@@ -343,7 +354,14 @@ const simpanSiswa = async () => {
     await fetchSiswa(); 
   } catch (error) {
     if (error.response && error.response.status === 422) {
-      errorMessage.value = Object.values(error.response.data.message)[0][0]; 
+      const validationErrors = error.response.data.errors;
+      if (validationErrors) {
+        errorMessage.value = Object.values(validationErrors)[0][0]; 
+      } else if (error.response.data.message) {
+        errorMessage.value = error.response.data.message;
+      } else {
+        errorMessage.value = 'Data yang dimasukkan tidak valid.';
+      }
     } else {
       errorMessage.value = 'Terjadi kesalahan pada server.';
     }

@@ -59,7 +59,7 @@
           v-if="errorMessage" 
           class="mt-6 text-center text-sm font-bold text-red-600 bg-red-50 border border-red-200 py-3 rounded-xl flex items-center justify-center"
         >
-          <span class="mr-2">⚠️</span> {{ errorMessage }}
+          <span class="mr-2"></span> {{ errorMessage }}
         </div>
         
       </div>
