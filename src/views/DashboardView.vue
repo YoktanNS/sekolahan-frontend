@@ -334,6 +334,49 @@
           </div>
         </div>
 
+        <div v-if="activeMenu === 'users'" class="animate-fade-in">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+              <h2 class="text-2xl font-bold text-slate-800">Manajemen Akun User</h2>
+              <button @click="bukaModalTambahUser" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition duration-200 flex items-center">
+                <span class="mr-2 text-lg leading-none">+</span> Tambah User
+              </button>
+            </div>
+          
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Username</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Tipe Akun (Role)</th>
+                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                  <tr v-if="listUsers.length === 0">
+                    <td colspan="3" class="px-6 py-12 text-center text-slate-400 italic">Data User belum tersedia.</td>
+                  </tr>
+                  <tr v-for="usr in listUsers" :key="usr.id" class="hover:bg-slate-50 transition duration-150 group">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-bold text-slate-800">{{ usr.username }}</div>
+                      <div v-if="usr.id == user?.id" class="text-xs text-emerald-500 font-medium">(Akun Anda)</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span :class="usr.type === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                        {{ usr.type }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                      <button @click="bukaModalEditUser(usr)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
+                      <button v-if="usr.id != user?.id" @click="hapusUser(usr.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div>
     </main>
 
@@ -647,6 +690,49 @@
       </div>
     </div>
 
+    <div v-if="isModalUserOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 class="text-lg font-bold text-slate-800">{{ isEditUserMode ? 'Edit Akun User' : 'Buat Akun Baru' }}</h3>
+          <button @click="isModalUserOpen = false" class="text-slate-400 hover:text-red-500 transition-colors font-bold text-xl">✕</button>
+        </div>
+
+        <div class="p-6">
+          <form @submit.prevent="simpanUser" class="space-y-5">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Username <span class="text-red-500">*</span></label>
+              <input v-model="formUser.username" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Tipe Akun (Role) <span class="text-red-500">*</span></label>
+              <select v-model="formUser.type" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
+                <option value="guru">Guru</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">
+                Password <span v-if="!isEditUserMode" class="text-red-500">*</span>
+              </label>
+              <input v-model="formUser.password" type="password" :required="!isEditUserMode" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Minimal 6 karakter">
+              <p v-if="isEditUserMode" class="text-xs text-amber-600 mt-1.5 font-medium">*Kosongkan jika tidak ingin mengubah password.</p>
+            </div>
+
+            <div v-if="errorMessage" class="text-sm font-bold text-red-600 bg-red-50 border border-red-200 py-3 px-4 rounded-xl flex items-center">
+              <span class="mr-2">!</span> {{ errorMessage }}
+            </div>
+
+            <div class="pt-2 flex justify-end space-x-3">
+              <button type="button" @click="isModalUserOpen = false" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors">Batal</button>
+              <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-600/30 transition-all transform hover:-translate-y-0.5">Simpan Akun</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -674,6 +760,7 @@ const listKelas = ref([]);
 const listGuru = ref([]);
 const listMapel = ref([]);
 const listJadwal = ref([]);
+const listUsers = ref([]);
 
 const totalSiswa = computed(() => listSiswa.value.length);
 const totalKelas = computed(() => listKelas.value.length);
@@ -1044,6 +1131,98 @@ const hapusMapel = async (id) => {
 };
 
 // ==========================================
+// CRUD DATA USER
+// ==========================================
+const isModalUserOpen = ref(false);
+const isEditUserMode = ref(false);
+const editUserId = ref(null);
+
+const getEmptyFormUser = () => ({ username: '', type: 'guru', password: '' });
+const formUser = ref(getEmptyFormUser());
+
+const fetchUsers = async () => {
+  try {
+    // Karena route di API Laravel Anda kemungkinan besar adalah /users berdasarkan Collection href
+    const response = await api.get('/users'); 
+    const collectionData = response.data.collection || (response.data.data && response.data.data.collection);
+
+    if (collectionData && collectionData.items) {
+        listUsers.value = collectionData.items.map(item => {
+            let flatObj = {};
+            item.data.forEach(f => { flatObj[f.name] = f.value; });
+            const urlParts = item.href.split('/');
+            flatObj.id = urlParts[urlParts.length - 1];
+            return flatObj;
+        });
+    } else {
+        listUsers.value = response.data.data || response.data;
+    }
+  } catch (error) {
+    console.error('Gagal mengambil data user:', error);
+  }
+};
+
+const bukaModalTambahUser = () => {
+  isEditUserMode.value = false; editUserId.value = null; errorMessage.value = '';
+  formUser.value = getEmptyFormUser();
+  isModalUserOpen.value = true;
+};
+
+const bukaModalEditUser = (usr) => {
+  isEditUserMode.value = true; editUserId.value = usr.id; errorMessage.value = '';
+  // Saat mengedit, password disembunyikan (dikosongkan dari form)
+  formUser.value = { username: usr.username, type: usr.type, password: '' };
+  isModalUserOpen.value = true;
+};
+
+const simpanUser = async () => {
+  errorMessage.value = '';
+  try {
+    const payload = { ...formUser.value };
+    
+    // Jika sedang mode edit dan password kosong, jangan kirim password ke backend
+    if (isEditUserMode.value && !payload.password) {
+      delete payload.password;
+    }
+
+    if (isEditUserMode.value) {
+      await api.put(`/users/${editUserId.value}`, payload);
+      alert('Akun berhasil diperbarui.');
+    } else {
+      await api.post('/users', payload);
+      alert('Akun baru berhasil ditambahkan.');
+    }
+    
+    isModalUserOpen.value = false;
+    await fetchUsers();
+  } catch (error) {
+    if (error.response && error.response.status === 422) {
+      // Penyesuaian karena UserController Anda menggunakan Validator::make() yang mereturn 'message'
+      const errors = error.response.data.message || error.response.data.errors;
+      errorMessage.value = typeof errors === 'object' ? Object.values(errors)[0][0] : errors;
+    } else {
+      errorMessage.value = 'Terjadi kesalahan pada server.';
+    }
+  }
+};
+
+const hapusUser = async (id) => {
+  if (id == user.value?.id) {
+    alert('Akses Ditolak: Anda tidak dapat menghapus akun yang sedang Anda gunakan.');
+    return;
+  }
+  
+  if (confirm('Yakin ingin menghapus akun User ini? Akun yang dihapus tidak bisa dikembalikan.')) {
+    try {
+      await api.delete(`/users/${id}`);
+      await fetchUsers();
+    } catch (error) {
+      alert('Gagal menghapus User.');
+    }
+  }
+};
+
+// ==========================================
 // INISIALISASI
 // ==========================================
 onMounted(async () => {
@@ -1062,6 +1241,11 @@ onMounted(async () => {
     await fetchSiswa();
     await fetchGuru();
     await fetchMapel();
+
+    if (user.value.type === 'admin') {
+      await fetchUsers();
+    }
+
   } catch (error) {
     localStorage.removeItem('token');
     router.push('/login');
