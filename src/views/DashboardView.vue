@@ -190,6 +190,56 @@
           </div>
         </div>
 
+            <div v-if="activeMenu === 'guru'" class="animate-fade-in">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+              <h2 class="text-2xl font-bold text-slate-800">Manajemen Data Guru</h2>
+              <button @click="bukaModalTambahGuru" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition duration-200 flex items-center">
+                <span class="mr-2 text-lg leading-none">+</span> Tambah Guru
+              </button>
+            </div>
+          
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">NIP</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Profil Guru</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Gender</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Kontak</th>
+                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                  <tr v-if="listGuru.length === 0">
+                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Data guru tidak ditemukan.</td>
+                  </tr>
+                  <tr v-for="guru in listGuru" :key="guru.id" class="hover:bg-slate-50 transition duration-150 group">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600">{{ guru.nip || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-bold text-slate-800">{{ guru.nama }}</div>
+                      <div class="text-xs text-slate-500">Pend: {{ guru.pendidikan || '-' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 capitalize">
+                      <span :class="guru.gender === 'laki-laki' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'" class="px-2.5 py-1 rounded-full text-xs font-semibold">
+                        {{ guru.gender || '-' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-slate-600">{{ guru.email || '-' }}</div>
+                      <div class="text-xs text-slate-400">{{ guru.phone_number || '-' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                      <button @click="bukaModalEditGuru(guru)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
+                      <button @click="hapusGuru(guru.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div>
     </main>
 
@@ -307,6 +357,80 @@
             </div>
           </form>
         </div>
+      </div>
+    </div>
+
+    <div v-if="isModalGuruOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
+        <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+          <h3 class="text-xl font-bold text-slate-800">{{ isEditGuruMode ? 'Update Data Guru' : 'Registrasi Guru Baru' }}</h3>
+          <button @click="isModalGuruOpen = false" class="text-slate-400 hover:text-red-500 hover:bg-red-50 h-8 w-8 rounded-full flex items-center justify-center text-2xl transition">&times;</button>
+        </div>
+
+        <form @submit.prevent="simpanGuru" class="overflow-y-auto p-8 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">NIP <span class="text-red-500">*</span></label>
+                <input v-model="formGuru.nip" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">ID Akun User <span class="text-red-500">*</span></label>
+                <input v-model="formGuru.user_id" type="number" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: 1">
+                <p class="text-xs text-slate-400 mt-1">ID akun login guru dari tabel users.</p>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
+                <input v-model="formGuru.nama" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Gender <span class="text-red-500">*</span></label>
+                <select v-model="formGuru.gender" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
+                  <option value="laki-laki">Laki-laki</option>
+                  <option value="perempuan">Perempuan</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Pendidikan Terakhir</label>
+                <input v-model="formGuru.pendidikan" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: S1 Matematika">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Email <span class="text-red-500">*</span></label>
+                <input v-model="formGuru.email" type="email" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+            </div>
+
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Nomor Handphone</label>
+                <input v-model="formGuru.phone_number" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Tempat Lahir</label>
+                <input v-model="formGuru.tempat_lahir" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Tanggal Lahir</label>
+                <input v-model="formGuru.tgl_lahir" type="date" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Alamat Tempat Tinggal</label>
+                <textarea v-model="formGuru.alamat" rows="4" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none resize-none"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="errorMessage" class="text-red-700 bg-red-50 p-4 rounded-lg text-sm font-medium border border-red-200 flex items-start">
+            <span class="mr-2">!</span> {{ errorMessage }}
+          </div>
+
+          <div class="flex justify-end pt-6 border-t border-slate-100 mt-8">
+            <button type="button" @click="isModalGuruOpen = false" class="bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 px-6 py-2.5 rounded-lg font-bold mr-3 transition">Batal</button>
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-2.5 rounded-lg font-bold shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5">
+              {{ isEditGuruMode ? 'Simpan Perubahan' : 'Tambah Data' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -526,6 +650,101 @@ const hapusKelas = async (id) => {
       await fetchKelas();
     } catch (error) {
       alert('Gagal menghapus kelas.');
+    }
+  }
+};
+
+// ==========================================
+// CRUD DATA GURU
+// ==========================================
+const isModalGuruOpen = ref(false);
+const isEditGuruMode = ref(false);
+const editGuruId = ref(null);
+
+const getEmptyFormGuru = () => ({
+  user_id: '', // <-- Tambahkan baris ini
+  nip: '', nama: '', tempat_lahir: '', tgl_lahir: '', 
+  gender: 'laki-laki', phone_number: '', email: '', 
+  alamat: '', pendidikan: ''
+});
+
+const formGuru = ref(getEmptyFormGuru());
+
+const fetchGuru = async () => {
+  try {
+    const response = await api.get('/guru');
+    
+    // Algoritma Collection sesuai dengan GuruCollection yang Anda buat
+    const collectionData = response.data.collection || (response.data.data && response.data.data.collection);
+
+    if (collectionData && collectionData.items) {
+        listGuru.value = collectionData.items.map(item => {
+            let flatObj = {};
+            item.data.forEach(f => { flatObj[f.name] = f.value; });
+            // Ambil ID dari URL href
+            const urlParts = item.href.split('/');
+            flatObj.id = urlParts[urlParts.length - 1];
+            return flatObj;
+        });
+    } else {
+        listGuru.value = response.data.data || response.data;
+    }
+  } catch (error) {
+    console.error('Gagal mengambil data guru:', error);
+  }
+};
+
+const bukaModalTambahGuru = () => {
+  isEditGuruMode.value = false; editGuruId.value = null; errorMessage.value = '';
+  formGuru.value = getEmptyFormGuru();
+  isModalGuruOpen.value = true;
+};
+
+const bukaModalEditGuru = (guru) => {
+  isEditGuruMode.value = true; editGuruId.value = guru.id; errorMessage.value = '';
+  formGuru.value = { ...guru };
+  isModalGuruOpen.value = true;
+};
+
+const simpanGuru = async () => {
+  errorMessage.value = '';
+  try {
+    // Salin form dan ubah string kosong ('') menjadi null
+    const payload = { ...formGuru.value };
+    Object.keys(payload).forEach(key => {
+      if (payload[key] === '') {
+        payload[key] = null;
+      }
+    });
+
+    if (isEditGuruMode.value) {
+      await api.put(`/guru/${editGuruId.value}`, payload);
+      alert('Data Guru berhasil diperbarui.');
+    } else {
+      await api.post('/guru', payload);
+      alert('Data Guru berhasil ditambahkan.');
+    }
+    isModalGuruOpen.value = false;
+    await fetchGuru();
+  } catch (error) {
+    if (error.response && error.response.status === 422) {
+      // Menampilkan pesan error validasi spesifik ke UI
+      const errors = error.response.data.errors;
+      errorMessage.value = errors ? Object.values(errors)[0][0] : error.response.data.message;
+      console.log("Detail Error 422:", errors); // Muncul di console log agar mudah di-debug
+    } else {
+      errorMessage.value = 'Terjadi kesalahan pada server.';
+    }
+  }
+};
+
+const hapusGuru = async (id) => {
+  if (confirm('Yakin ingin menghapus data guru ini?')) {
+    try {
+      await api.delete(`/guru/${id}`);
+      await fetchGuru();
+    } catch (error) {
+      alert('Gagal menghapus data guru.');
     }
   }
 };
