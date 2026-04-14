@@ -190,7 +190,7 @@
           </div>
         </div>
 
-            <div v-if="activeMenu === 'guru'" class="animate-fade-in">
+        <div v-if="activeMenu === 'guru'" class="animate-fade-in">
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
               <h2 class="text-2xl font-bold text-slate-800">Manajemen Data Guru</h2>
@@ -277,6 +277,55 @@
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
                       <button @click="bukaModalEditMapel(mapel)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
                       <button @click="hapusMapel(mapel.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="activeMenu === 'jadwal'" class="animate-fade-in">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+              <h2 class="text-2xl font-bold text-slate-800">Manajemen Jadwal Pelajaran</h2>
+              <button @click="bukaModalTambahJadwal" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition duration-200 flex items-center">
+                <span class="mr-2 text-lg leading-none">+</span> Tambah Jadwal
+              </button>
+            </div>
+          
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Hari & Jam</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Kelas</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Mata Pelajaran</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Guru Pengajar</th>
+                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                  <tr v-if="listJadwal.length === 0">
+                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Data Jadwal Pelajaran belum tersedia.</td>
+                  </tr>
+                  <tr v-for="jadwal in listJadwal" :key="jadwal.id" class="hover:bg-slate-50 transition duration-150 group">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-bold text-emerald-600 uppercase">{{ jadwal.hari }}</div>
+                      <div class="text-xs text-slate-500 font-medium">{{ jadwal.jam_pelajaran }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md text-xs font-bold">{{ jadwal.nama_kelas }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-bold text-slate-800">{{ jadwal.nama_mapel }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                      {{ jadwal.nama_guru }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                      <button @click="bukaModalEditJadwal(jadwal)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
+                      <button @click="hapusJadwal(jadwal.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
                     </td>
                   </tr>
                 </tbody>
@@ -526,6 +575,78 @@
       </div>
     </div>
 
+    <div v-if="isModalJadwalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 class="text-lg font-bold text-slate-800">{{ isEditJadwalMode ? 'Edit Jadwal Pelajaran' : 'Buat Jadwal Baru' }}</h3>
+          <button @click="isModalJadwalOpen = false" class="text-slate-400 hover:text-red-500 transition-colors font-bold text-xl">✕</button>
+        </div>
+
+        <div class="p-6">
+          <form @submit.prevent="simpanJadwal" class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Hari <span class="text-red-500">*</span></label>
+                <select v-model="formJadwal.hari" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
+                  <option value="" disabled>Pilih Hari...</option>
+                  <option value="senin">Senin</option>
+                  <option value="selasa">Selasa</option>
+                  <option value="rabu">Rabu</option>
+                  <option value="kamis">Kamis</option>
+                  <option value="jumat">Jumat</option>
+                  <option value="sabtu">Sabtu</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Jam Pelajaran <span class="text-red-500">*</span></label>
+                <input v-model="formJadwal.jam_pelajaran" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: 07:00 - 08:30 / Ke-1">
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Ruang Kelas <span class="text-red-500">*</span></label>
+                <select v-model="formJadwal.kelas_id" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
+                  <option value="" disabled>Pilih Kelas...</option>
+                  <option v-for="kls in listKelas" :key="kls.id" :value="kls.id">
+                    {{ kls.nama_kelas }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Mata Pelajaran <span class="text-red-500">*</span></label>
+                <select v-model="formJadwal.mapel_id" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
+                  <option value="" disabled>Pilih Mapel...</option>
+                  <option v-for="mapel in listMapel" :key="mapel.id" :value="mapel.id">
+                    {{ mapel.nama_mapel }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Guru Pengajar <span class="text-red-500">*</span></label>
+                <select v-model="formJadwal.guru_id" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
+                  <option value="" disabled>Pilih Guru...</option>
+                  <option v-for="guru in listGuru" :key="guru.id" :value="guru.id">
+                    {{ guru.nama }} (NIP: {{ guru.nip }})
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div v-if="errorMessage" class="text-sm font-bold text-red-600 bg-red-50 border border-red-200 py-3 px-4 rounded-xl flex items-center">
+              <span class="mr-2">!</span> {{ errorMessage }}
+            </div>
+
+            <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
+              <button type="button" @click="isModalJadwalOpen = false" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors">Batal</button>
+              <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-600/30 transition-all transform hover:-translate-y-0.5">Simpan Jadwal</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -552,6 +673,7 @@ const listSiswa = ref([]);
 const listKelas = ref([]);
 const listGuru = ref([]);
 const listMapel = ref([]);
+const listJadwal = ref([]);
 
 const totalSiswa = computed(() => listSiswa.value.length);
 const totalKelas = computed(() => listKelas.value.length);
