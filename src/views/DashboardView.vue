@@ -240,6 +240,51 @@
           </div>
         </div>
 
+        <div v-if="activeMenu === 'mapel'" class="animate-fade-in">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+              <h2 class="text-2xl font-bold text-slate-800">Manajemen Mata Pelajaran</h2>
+              <button @click="bukaModalTambahMapel" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition duration-200 flex items-center">
+                <span class="mr-2 text-lg leading-none">+</span> Tambah Mapel
+              </button>
+            </div>
+          
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Kode Mapel</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Mata Pelajaran & Deskripsi</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Tingkat Kelas</th>
+                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                  <tr v-if="listMapel.length === 0">
+                    <td colspan="4" class="px-6 py-12 text-center text-slate-400 italic">Data Mata Pelajaran belum tersedia.</td>
+                  </tr>
+                  <tr v-for="mapel in listMapel" :key="mapel.id" class="hover:bg-slate-50 transition duration-150 group">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600">{{ mapel.kode_mapel }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-bold text-slate-800">{{ mapel.nama_mapel }}</div>
+                      <div class="text-xs text-slate-500 truncate max-w-xs">{{ mapel.deskripsi || 'Tidak ada deskripsi' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200">
+                        {{ mapel.tingkat || 'Umum' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                      <button @click="bukaModalEditMapel(mapel)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
+                      <button @click="hapusMapel(mapel.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div>
     </main>
 
@@ -431,6 +476,53 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div v-if="isModalMapelOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 class="text-lg font-bold text-slate-800">{{ isEditMapelMode ? 'Edit Mata Pelajaran' : 'Tambah Mapel Baru' }}</h3>
+          <button @click="isModalMapelOpen = false" class="text-slate-400 hover:text-red-500 transition-colors font-bold text-xl">✕</button>
+        </div>
+
+        <div class="p-6">
+          <form @submit.prevent="simpanMapel" class="space-y-5">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Kode Mapel <span class="text-red-500">*</span></label>
+              <input v-model="formMapel.kode_mapel" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: MAT-10">
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Nama Mata Pelajaran <span class="text-red-500">*</span></label>
+              <input v-model="formMapel.nama_mapel" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: Matematika Peminatan">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Tingkat Kelas</label>
+              <select v-model="formMapel.tingkat" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
+                <option value="Umum">Umum / Semua Tingkat</option>
+                <option value="Kelas 10">Kelas 10</option>
+                <option value="Kelas 11">Kelas 11</option>
+                <option value="Kelas 12">Kelas 12</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Deskripsi Singkat</label>
+              <textarea v-model="formMapel.deskripsi" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none resize-none" placeholder="Opsional..."></textarea>
+            </div>
+
+            <div v-if="errorMessage" class="text-sm font-bold text-red-600 bg-red-50 border border-red-200 py-3 px-4 rounded-xl flex items-center">
+              <span class="mr-2">!</span> {{ errorMessage }}
+            </div>
+
+            <div class="pt-2 flex justify-end space-x-3">
+              <button type="button" @click="isModalMapelOpen = false" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors">Batal</button>
+              <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-600/30 transition-all transform hover:-translate-y-0.5">Simpan Data</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
@@ -750,6 +842,86 @@ const hapusGuru = async (id) => {
 };
 
 // ==========================================
+// CRUD DATA MATA PELAJARAN (MAPEL)
+// ==========================================
+const isModalMapelOpen = ref(false);
+const isEditMapelMode = ref(false);
+const editMapelId = ref(null);
+
+const getEmptyFormMapel = () => ({
+  kode_mapel: '', nama_mapel: '', tingkat: 'Umum', deskripsi: ''
+});
+const formMapel = ref(getEmptyFormMapel());
+
+const fetchMapel = async () => {
+  try {
+    const response = await api.get('/mapel');
+    
+    // Algoritma Collection yang sama dengan Guru, Siswa, dan Kelas
+    const collectionData = response.data.collection || (response.data.data && response.data.data.collection);
+
+    if (collectionData && collectionData.items) {
+        listMapel.value = collectionData.items.map(item => {
+            let flatObj = {};
+            item.data.forEach(f => { flatObj[f.name] = f.value; });
+            const urlParts = item.href.split('/');
+            flatObj.id = urlParts[urlParts.length - 1]; // Ekstrak ID untuk edit/hapus
+            return flatObj;
+        });
+    } else {
+        listMapel.value = response.data.data || response.data;
+    }
+  } catch (error) {
+    console.error('Gagal mengambil data mapel:', error);
+  }
+};
+
+const bukaModalTambahMapel = () => {
+  isEditMapelMode.value = false; editMapelId.value = null; errorMessage.value = '';
+  formMapel.value = getEmptyFormMapel();
+  isModalMapelOpen.value = true;
+};
+
+const bukaModalEditMapel = (mapel) => {
+  isEditMapelMode.value = true; editMapelId.value = mapel.id; errorMessage.value = '';
+  formMapel.value = { ...mapel };
+  isModalMapelOpen.value = true;
+};
+
+const simpanMapel = async () => {
+  errorMessage.value = '';
+  try {
+    if (isEditMapelMode.value) {
+      await api.put(`/mapel/${editMapelId.value}`, formMapel.value);
+      alert('Mata Pelajaran berhasil diperbarui.');
+    } else {
+      await api.post('/mapel', formMapel.value);
+      alert('Mata Pelajaran berhasil ditambahkan.');
+    }
+    isModalMapelOpen.value = false;
+    await fetchMapel();
+  } catch (error) {
+    if (error.response && error.response.status === 422) {
+      const errors = error.response.data.errors;
+      errorMessage.value = errors ? Object.values(errors)[0][0] : error.response.data.message;
+    } else {
+      errorMessage.value = 'Terjadi kesalahan pada server.';
+    }
+  }
+};
+
+const hapusMapel = async (id) => {
+  if (confirm('Yakin ingin menghapus Mata Pelajaran ini?')) {
+    try {
+      await api.delete(`/mapel/${id}`);
+      await fetchMapel();
+    } catch (error) {
+      alert('Gagal menghapus Mata Pelajaran.');
+    }
+  }
+};
+
+// ==========================================
 // INISIALISASI
 // ==========================================
 onMounted(async () => {
@@ -766,6 +938,8 @@ onMounted(async () => {
     // Panggil fetchKelas DULU baru fetchSiswa agar relasi terbaca
     await fetchKelas();
     await fetchSiswa();
+    await fetchGuru();
+    await fetchMapel();
   } catch (error) {
     localStorage.removeItem('token');
     router.push('/login');
