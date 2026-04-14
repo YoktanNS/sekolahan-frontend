@@ -8,7 +8,6 @@
       </div>
 
       <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-3">
-        
         <button @click="activeMenu = 'dashboard'" :class="['w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors', activeMenu === 'dashboard' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white']">
           <span class="mr-3"></span> Beranda
         </button>
@@ -41,7 +40,6 @@
             <span class="mr-3"></span> Manajemen User
           </button>
         </div>
-
       </nav>
     </aside>
 
@@ -80,19 +78,19 @@
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-emerald-500 hover:shadow-md transition">
               <p class="text-sm font-semibold text-gray-500">Total Siswa</p>
-              <p class="text-3xl font-bold text-slate-800 mt-2">{{ listSiswa.length }}</p>
+              <p class="text-3xl font-bold text-slate-800 mt-2">{{ totalSiswa }}</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500 hover:shadow-md transition">
               <p class="text-sm font-semibold text-gray-500">Total Guru</p>
-              <p class="text-3xl font-bold text-slate-800 mt-2">12</p>
+              <p class="text-3xl font-bold text-slate-800 mt-2">{{ totalGuru }}</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-amber-500 hover:shadow-md transition">
               <p class="text-sm font-semibold text-gray-500">Total Kelas</p>
-              <p class="text-3xl font-bold text-slate-800 mt-2">6</p>
+              <p class="text-3xl font-bold text-slate-800 mt-2">{{ totalKelas }}</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500 hover:shadow-md transition">
               <p class="text-sm font-semibold text-gray-500">Total Mapel</p>
-              <p class="text-3xl font-bold text-slate-800 mt-2">18</p>
+              <p class="text-3xl font-bold text-slate-800 mt-2">{{ totalMapel }}</p>
             </div>
           </div>
         </div>
@@ -102,14 +100,15 @@
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
               <div class="relative w-64">
                 <input v-model="searchQuery" type="text" placeholder="Cari siswa (Nama/NIS)..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
-                <span class="absolute left-3 top-2.5 text-gray-400"></span>
+                <span class="absolute left-3 top-2.5 text-gray-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
               </div>
-
               <button @click="bukaModalTambah" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition duration-200 flex items-center">
                 <span class="mr-2 text-lg leading-none">+</span> Tambah Siswa
               </button>
             </div>
-
+          
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-slate-50">
@@ -129,7 +128,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">{{ siswa.nis || '-' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="text-sm font-bold text-slate-800">{{ siswa.nama }}</div>
-                      <div class="text-xs text-slate-400">ID Kelas: {{ siswa.kelas_id || 'Belum ada kelas' }}</div>
+                      <div class="text-xs text-emerald-600 font-semibold">Kelas: {{ getNamaKelas(siswa.kelas_id) }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 capitalize">
                       <span :class="siswa.gender === 'laki-laki' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'" class="px-2.5 py-1 rounded-full text-xs font-semibold">
@@ -140,10 +139,10 @@
                       <div class="text-sm text-slate-600">{{ siswa.email || '-' }}</div>
                       <div class="text-xs text-slate-400">{{ siswa.phone_number || '-' }}</div>
                     </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
-                    <button @click="bukaModalEdit(siswa)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
-                    <button @click="hapusSiswa(siswa.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
-                  </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                      <button @click="bukaModalEdit(siswa)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
+                      <button @click="hapusSiswa(siswa.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -151,10 +150,44 @@
           </div>
         </div>
 
-        <div v-if="['guru', 'kelas', 'mapel', 'jadwal', 'users'].includes(activeMenu)" class="flex flex-col items-center justify-center h-64 bg-white rounded-xl border border-dashed border-gray-300">
-          <div class="text-4xl mb-4"></div>
-          <h3 class="text-lg font-bold text-slate-700 mb-1">Modul Belum Tersedia</h3>
-          <p class="text-slate-500 text-sm">Halaman untuk <strong>{{ activeMenu }}</strong> akan segera dibangun.</p>
+        <div v-if="activeMenu === 'kelas'" class="animate-fade-in">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-slate-800">Manajemen Ruang Kelas</h2>
+            <button @click="bukaModalTambahKelas" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5">
+              + Tambah Kelas
+            </button>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Kode Kelas</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Kelas</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Wali Kelas</th>
+                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  <tr v-if="listKelas.length === 0">
+                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Data kelas belum tersedia.</td>
+                  </tr>
+                  <tr v-for="kelas in listKelas" :key="kelas.id" class="hover:bg-slate-50 transition duration-150 group">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ kelas.id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600">{{ kelas.kode_kelas || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800">{{ kelas.nama_kelas || kelas.nama }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{{ kelas.wali_kelas || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                      <button @click="bukaModalEditKelas(kelas)" class="text-emerald-600 hover:text-emerald-800 font-bold">Edit</button>
+                      <button @click="hapusKelas(kelas.id)" class="text-red-500 hover:text-red-700 font-bold">Hapus</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -162,7 +195,6 @@
 
     <div v-if="isModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
-        
         <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-slate-50">
           <h3 class="text-xl font-bold text-slate-800">
             {{ isEditMode ? 'Update Data Siswa' : 'Registrasi Siswa Baru' }}
@@ -172,7 +204,6 @@
 
         <form @submit.prevent="simpanSiswa" class="overflow-y-auto p-8 space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            
             <div class="space-y-5">
               <div>
                 <label class="block text-sm font-bold text-slate-700 mb-1.5">NIS <span class="text-red-500">*</span></label>
@@ -213,8 +244,13 @@
                 <input v-model="formSiswa.nama_ortu" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
               </div>
               <div>
-                <label class="block text-sm font-bold text-slate-700 mb-1.5">ID Kelas Terdaftar</label>
-                <input v-model="formSiswa.kelas_id" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Contoh: 1">
+                <label class="block text-sm font-bold text-slate-700 mb-1.5">Kelas Terdaftar <span class="text-red-500">*</span></label>
+                <select v-model="formSiswa.kelas_id" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition cursor-pointer">
+                  <option value="" disabled>-- Pilih Ruang Kelas --</option>
+                  <option v-for="kls in listKelas" :key="kls.id" :value="kls.id">
+                    {{ kls.nama_kelas }} ({{ kls.kode_kelas }})
+                  </option>
+                </select>
               </div>
               <div>
                 <label class="block text-sm font-bold text-slate-700 mb-1.5">Alamat Tempat Tinggal</label>
@@ -224,7 +260,7 @@
           </div>
 
           <div v-if="errorMessage" class="text-red-700 bg-red-50 p-4 rounded-lg text-sm font-medium border border-red-200 flex items-start">
-            <span class="mr-2"></span> {{ errorMessage }}
+            <span class="mr-2">!</span> {{ errorMessage }}
           </div>
 
           <div class="flex justify-end pt-6 border-t border-slate-100 mt-8">
@@ -234,7 +270,43 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
 
+    <div v-if="isModalKelasOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 class="text-lg font-bold text-slate-800">{{ isEditKelasMode ? 'Edit Data Kelas' : 'Tambah Kelas Baru' }}</h3>
+          <button @click="isModalKelasOpen = false" class="text-slate-400 hover:text-red-500 transition-colors font-bold text-xl">✕</button>
+        </div>
+
+        <div class="p-6">
+          <form @submit.prevent="simpanKelas" class="space-y-5">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Kode Kelas <span class="text-red-500">*</span></label>
+              <input v-model="formKelas.kode_kelas" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="Contoh: KLS-10A">
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Nama Kelas <span class="text-red-500">*</span></label>
+              <input v-model="formKelas.nama_kelas" type="text" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="Contoh: 10 MIPA 1">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Wali Kelas</label>
+              <input v-model="formKelas.wali_kelas" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="Nama Wali Kelas (Opsional)">
+            </div>
+
+            <div v-if="errorMessage" class="text-sm font-bold text-red-600 bg-red-50 border border-red-200 py-3 px-4 rounded-xl flex items-center">
+              <span class="mr-2">!</span> {{ errorMessage }}
+            </div>
+
+            <div class="pt-2 flex justify-end space-x-3">
+              <button type="button" @click="isModalKelasOpen = false" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors">Batal</button>
+              <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-600/30 transition-all transform hover:-translate-y-0.5">Simpan Data</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
@@ -242,7 +314,6 @@
 </template>
 
 <style>
-/* Efek animasi simpel saat pindah tab */
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }
@@ -259,8 +330,17 @@ import api from '../api';
 
 const router = useRouter();
 const user = ref(null);
-const listSiswa = ref([]);
 const activeMenu = ref('dashboard');
+
+const listSiswa = ref([]);
+const listKelas = ref([]);
+const listGuru = ref([]);
+const listMapel = ref([]);
+
+const totalSiswa = computed(() => listSiswa.value.length);
+const totalKelas = computed(() => listKelas.value.length);
+const totalGuru = computed(() => listGuru.value.length);
+const totalMapel = computed(() => listMapel.value.length);
 
 const searchQuery = ref(''); 
 const filteredSiswa = computed(() => {
@@ -275,8 +355,21 @@ const filteredSiswa = computed(() => {
   });
 });
 
-const isModalOpen = ref(false);
 const errorMessage = ref('');
+
+// ==========================================
+// FUNGSI HELPER (RELASI)
+// ==========================================
+const getNamaKelas = (id) => {
+  if (!id) return 'Belum ada kelas';
+  const kelas = listKelas.value.find(k => String(k.id) === String(id));
+  return kelas ? kelas.nama_kelas : 'ID Kelas: ' + id;
+};
+
+// ==========================================
+// CRUD DATA SISWA
+// ==========================================
+const isModalOpen = ref(false);
 const isEditMode = ref(false); 
 const editId = ref(null); 
 
@@ -288,24 +381,6 @@ const getEmptyForm = () => ({
 
 const formSiswa = ref(getEmptyForm());
 
-onMounted(async () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    router.push('/login');
-    return;
-  }
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-  try {
-    const responseUser = await api.get('/me');
-    user.value = responseUser.data;
-    await fetchSiswa();
-  } catch (error) {
-    localStorage.removeItem('token');
-    router.push('/login');
-  }
-});
-
 const fetchSiswa = async () => {
   try {
     const response = await api.get('/siswa');
@@ -315,13 +390,16 @@ const fetchSiswa = async () => {
         listSiswa.value = collectionData.items.map(item => {
             let flatObj = {};
             item.data.forEach(f => { flatObj[f.name] = f.value; });
+            // Pastikan ID Siswa juga masuk untuk keperluan edit/hapus
+            const urlParts = item.href.split('/');
+            flatObj.id = urlParts[urlParts.length - 1];
             return flatObj;
         });
     } else {
         listSiswa.value = response.data.data || response.data;
     }
   } catch (error) {
-    console.error('Gagal:', error);
+    console.error('Gagal mengambil data siswa:', error);
   }
 };
 
@@ -344,10 +422,10 @@ const simpanSiswa = async () => {
 
     if (isEditMode.value) {
       await api.put(`/siswa/${editId.value}`, payload);
-      alert('Data Siswa berhasil diperbarui!');
+      alert('Data Siswa berhasil diperbarui.');
     } else {
       await api.post('/siswa', payload);
-      alert('Data Siswa berhasil ditambahkan!');
+      alert('Data Siswa berhasil ditambahkan.');
     }
     
     isModalOpen.value = false; 
@@ -355,13 +433,7 @@ const simpanSiswa = async () => {
   } catch (error) {
     if (error.response && error.response.status === 422) {
       const validationErrors = error.response.data.errors;
-      if (validationErrors) {
-        errorMessage.value = Object.values(validationErrors)[0][0]; 
-      } else if (error.response.data.message) {
-        errorMessage.value = error.response.data.message;
-      } else {
-        errorMessage.value = 'Data yang dimasukkan tidak valid.';
-      }
+      errorMessage.value = validationErrors ? Object.values(validationErrors)[0][0] : error.response.data.message;
     } else {
       errorMessage.value = 'Terjadi kesalahan pada server.';
     }
@@ -379,6 +451,107 @@ const hapusSiswa = async (id) => {
     }
   }
 };
+
+// ==========================================
+// CRUD DATA KELAS
+// ==========================================
+const isModalKelasOpen = ref(false);
+const isEditKelasMode = ref(false);
+const editKelasId = ref(null);
+const formKelas = ref({ kode_kelas: '', nama_kelas: '', wali_kelas: '' });
+
+const fetchKelas = async () => {
+  try {
+    const response = await api.get('/kelas');
+    const items = response.data.data?.collection?.items || [];
+
+    listKelas.value = items.map(item => {
+      let objekKelas = {};
+      const urlParts = item.href.split('/');
+      objekKelas.id = urlParts[urlParts.length - 1];
+
+      item.data.forEach(field => {
+        objekKelas[field.name] = field.value;
+      });
+      return objekKelas;
+    });
+    console.log("Data Kelas diproses:", listKelas.value);
+  } catch (error) {
+    console.error('Gagal mengambil data kelas:', error);
+  }
+};
+
+const bukaModalTambahKelas = () => {
+  isEditKelasMode.value = false; editKelasId.value = null; errorMessage.value = '';
+  formKelas.value = { kode_kelas: '', nama_kelas: '', wali_kelas: '' }; 
+  isModalKelasOpen.value = true;
+};
+
+const bukaModalEditKelas = (kelas) => {
+  isEditKelasMode.value = true; editKelasId.value = kelas.id; errorMessage.value = '';
+  formKelas.value = { 
+    kode_kelas: kelas.kode_kelas || '', 
+    nama_kelas: kelas.nama_kelas || kelas.nama, 
+    wali_kelas: kelas.wali_kelas || '' 
+  };
+  isModalKelasOpen.value = true;
+};
+
+const simpanKelas = async () => {
+  errorMessage.value = '';
+  try {
+    if (isEditKelasMode.value) {
+      await api.put(`/kelas/${editKelasId.value}`, formKelas.value);
+      alert('Data Kelas berhasil diperbarui.');
+    } else {
+      await api.post('/kelas', formKelas.value);
+      alert('Data Kelas berhasil ditambahkan.');
+    }
+    isModalKelasOpen.value = false;
+    await fetchKelas();
+  } catch (error) {
+    if (error.response && error.response.status === 422) {
+      const validationErrors = error.response.data.errors;
+      errorMessage.value = validationErrors ? Object.values(validationErrors)[0][0] : error.response.data.message;
+    } else {
+      errorMessage.value = 'Terjadi kesalahan pada server backend.';
+    }
+  }
+};
+
+const hapusKelas = async (id) => {
+  if (confirm('Yakin ingin menghapus kelas ini?')) {
+    try {
+      await api.delete(`/kelas/${id}`);
+      await fetchKelas();
+    } catch (error) {
+      alert('Gagal menghapus kelas.');
+    }
+  }
+};
+
+// ==========================================
+// INISIALISASI
+// ==========================================
+onMounted(async () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    router.push('/login');
+    return;
+  }
+  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+  try {
+    const responseUser = await api.get('/me');
+    user.value = responseUser.data;
+    // Panggil fetchKelas DULU baru fetchSiswa agar relasi terbaca
+    await fetchKelas();
+    await fetchSiswa();
+  } catch (error) {
+    localStorage.removeItem('token');
+    router.push('/login');
+  }
+});
 
 const handleLogout = async () => {
   try { await api.post('/logout'); } catch (error) {}
